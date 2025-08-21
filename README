@@ -1,0 +1,18 @@
+Auren
+=====
+Auren = Advanced Unified Retrieval Engine
+
+In simple terms; search through a file system by text queries.
+
+Stack
+-----
+GUI          - Tauri
+Backend      - Go
+Vector Store - FAISS
+Embeddings   - (MiniLM) / (bge-m3 / nomic-embed-text) / (mxbai-embed-large)
+
+Run (test)
+---
+Init python embed server: `py python/embed.py`
+Init go backend server  : `go run ./cmd/server`
+sample test cmd: `curl -X POST -H "Content-Type: application/json" -d '{"query":"what is cloud computing","top_k":1}' http://localhost:8080/search`

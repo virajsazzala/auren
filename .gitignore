@@ -1,0 +1,13 @@
+# build artifacts
+/dist/
+
+# go vendor
+/vendor/
+
+# python caches & env
+*venv
+__pycache__/
+*.pyc
+
+# notes
+note/
