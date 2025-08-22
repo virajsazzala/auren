@@ -2,7 +2,9 @@ package search
 
 import (
 	"fmt"
+	"database/sql"
 
+	_ "github.com/mattn/go-sqlite3"
 	faiss "github.com/DataIntelligenceCrew/go-faiss"
 )
 
@@ -79,3 +81,74 @@ func (i *Index) Search(query []float32, k int) ([]Result, error) {
 
 	return out, nil
 }
+
+func (i *Index) Save(path string) error {
+	if err := faiss.WriteIndex(i.idx, path + ".faiss"); err != nil {
+		return fmt.Errorf("failed to save faiss: %w", err)
+	}
+
+	db, err := sql.Open("sqlite3", path + ".db")
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS docs (
+		faiss_id INTEGER PRIMARY KEY,
+		file_id TEXT UNIQUE
+	);`)
+	if err != nil {
+		return err
+	}
+
+
+	// replace all mappings
+	tx, _ := db.Begin()
+	_, _ = tx.Exec("DELETE from docs;")
+	stmt, _ := tx.Prepare("INSERT INTO docs(faiss_id, file_id) VALUES (?, ?)")
+	defer stmt.Close()
+
+	for faissID, doc := range i.docs {
+		if _, err := stmt.Exec(faissID, doc.FileID); err != nil {
+			return err
+		}
+	}
+	tx.Commit()
+
+	return nil
+}
+
+
+func (i *Index) Load(path string) error {
+	idxImpl, err := faiss.ReadIndex(path + ".faiss", 0)
+	if err != nil {
+		return fmt.Errorf("failed to load faiss: %w", err)
+	}
+	i.idx = idxImpl
+
+	db, err := sql.Open("sqlite3", path + ".db")
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT faiss_id, file_id FROM docs ORDER BY faiss_id ASC")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	var docs []Doc
+	for rows.Next() {
+		var fid int
+		var fileID string
+		if err := rows.Scan(&fid, &fileID); err != nil {
+			return err
+		}
+		docs = append(docs, Doc{FileID: fileID})
+	}
+	i.docs = docs
+	return nil
+}
+
+

@@ -20,6 +20,8 @@ func main() {
 
 	http.HandleFunc("/search", api.SearchHandler)
 	http.HandleFunc("/add", api.AddHandler)
+	http.HandleFunc("/save", api.SaveHandler)
+	http.HandleFunc("/load", api.LoadHandler)
 
 	log.Println("server on", config.ServerAddr)
 	log.Fatal(http.ListenAndServe(config.ServerAddr, nil))

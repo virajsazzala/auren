@@ -31,3 +31,13 @@ sample search cmd:
 ```
 curl -X POST -H "Content-Type: application/json" -d '{"query":"what is cloud computing","top_k":1}' http://localhost:8080/search
 ```
+
+sample save cmd:
+```
+curl -X POST http://localhost:8080/save
+```
+
+sample load cmd:
+```
+curl -X POST http://localhost:8080/load
+```

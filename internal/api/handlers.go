@@ -66,3 +66,20 @@ func AddHandler(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(map[string]any{"status":"ok","added" : len(req.Documents)})
 }
 
+func SaveHandler(w http.ResponseWriter, r *http.Request) {
+	if err := search.SaveIndex(config.IndexPath); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "saved"})
+}
+
+func LoadHandler(w http.ResponseWriter, r *http.Request) {
+	if err := search.LoadIndex(config.IndexPath); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "loaded"})
+}

@@ -7,4 +7,6 @@ const (
 
 	EmbedServerAddr = ":8000"
 	EmbedEndpoint = "embed"
+
+	IndexPath = "data/index"
 )

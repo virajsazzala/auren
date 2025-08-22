@@ -2,6 +2,7 @@ package search
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/virajsazzala/auren/internal/config"
@@ -58,4 +59,20 @@ func Query(text string, k int) ([]Result, error) {
 
 func GetEmbedding(text string) ([]float32, error) {
 	return python.GetEmbedding(text)
+}
+
+func SaveIndex(path string) error {
+	if FAISS == nil {
+		return fmt.Errorf("no index intialized")
+	}
+	return FAISS.Save(path)
+}
+
+func LoadIndex(path string) error {
+	if FAISS == nil {
+		if err := Init(); err != nil {
+			return err
+		}
+	}
+	return FAISS.Load(path)
 }
