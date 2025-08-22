@@ -15,4 +15,19 @@ Run (test)
 ---
 Init python embed server: `py python/embed.py`
 Init go backend server  : `go run ./cmd/server`
-sample test cmd: `curl -X POST -H "Content-Type: application/json" -d '{"query":"what is cloud computing","top_k":1}' http://localhost:8080/search`
+
+sample add cmd: 
+```
+curl -X POST http://localhost:8080/add -H "Content-Type: application/json" \
+  -d '{
+    "documents": {
+      "cloud_intro.md": "Cloud computing delivers computing services like servers, storage, databases, networking, and software over the Internet.",
+      "devops_practices.md": "DevOps combines software development and IT operations. Key practices include CI/CD, infrastructure as code, and monitoring."
+    }
+  }'
+```
+
+sample search cmd: 
+```
+curl -X POST -H "Content-Type: application/json" -d '{"query":"what is cloud computing","top_k":1}' http://localhost:8080/search
+```

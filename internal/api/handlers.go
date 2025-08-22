@@ -14,7 +14,7 @@ type SearchRequest struct {
 }
 
 type AddRequest struct {
-	Documents []string `json:"documents"`
+	Documents map[string]string `json:"documents"`
 }
 
 func SearchHandler(w http.ResponseWriter, r *http.Request) {
@@ -45,17 +45,20 @@ func AddHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	dlist := make([]search.Doc, 0, len(req.Documents))
 	vecs := make([][]float32, 0, len(req.Documents))
-	for _, d := range req.Documents {
-		v, err := search.GetEmbedding(d) // small proxy
+
+	for fid, content := range req.Documents {
+		v, err := search.GetEmbedding(content) // small proxy
 		if err != nil {
 			http.Error(w, "embedding error: " + err.Error(), http.StatusInternalServerError)
 			return
 		}
+		dlist = append(dlist, search.Doc{FileID: fid, Content: content})
 		vecs = append(vecs, v)
 	}
 
-	if err := search.FAISS.Add(req.Documents, vecs); err != nil {
+	if err := search.FAISS.Add(dlist, vecs); err != nil {
 		http.Error(w, "faiss add error: " + err.Error(), http.StatusInternalServerError)
 		return
 	}

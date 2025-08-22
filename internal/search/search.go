@@ -9,8 +9,8 @@ import (
 )
 
 type Result struct {
-	Document string  `json:"document"`
-	Score    float32 `json:"score"`
+	FileID  string  `json:"file_id"`
+	Score   float32 `json:"score"`
 }
 
 var FAISS *Index
@@ -27,22 +27,24 @@ func LoadDocsFromFile(path string) error {
 		return err
 	}
 
-	var docs []string
+	var docs map[string]string
 	if err := json.Unmarshal(data, &docs); err != nil {
 		return err
 	}
 
 	// embed & add
+	dlist := make([]Doc, 0, len(docs))
 	vecs := make([][]float32, 0, len(docs))
-	for _, d := range docs {
-		v, err := python.GetEmbedding(d)
+	for fid, content := range docs {
+		v, err := python.GetEmbedding(content)
 		if err != nil {
 			return err
 		}
+		dlist = append(dlist, Doc{FileID: fid, Content: content})
 		vecs = append(vecs, v)
 	}
 
-	return FAISS.Add(docs, vecs)
+	return FAISS.Add(dlist, vecs)
 }
 
 func Query(text string, k int) ([]Result, error) {

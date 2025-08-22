@@ -6,9 +6,14 @@ import (
 	faiss "github.com/DataIntelligenceCrew/go-faiss"
 )
 
+type Doc struct {
+	FileID string
+	Content string
+}
+
 type Index struct {
 	idx faiss.Index
-	docs []string
+	docs []Doc
 }
 
 // move this to some utils dir later on
@@ -40,10 +45,10 @@ func NewIndex(dim int, useIP bool) (*Index, error) {
 		return nil, err
 	}
 
-	return &Index {idx: idx, docs: make([]string, 0, 1024)}, nil
+	return &Index {idx: idx, docs: make([]Doc, 0, 1024)}, nil
 }
 
-func (i *Index) Add(docs []string, vectors [][]float32) error {
+func (i *Index) Add(docs []Doc, vectors [][]float32) error {
 	flatVectors := flattenVectors(vectors)
 	if err := i.idx.Add(flatVectors); err != nil {
 		return err
@@ -66,7 +71,7 @@ func (i *Index) Search(query []float32, k int) ([]Result, error) {
 	for j, id := range labels {
 		if id >= 0 && int(id) < len(i.docs) {
 			out = append(out, Result{
-				Document: i.docs[id],
+				FileID: i.docs[id].FileID,
 				Score: dists[j],
 			})
 		}
